@@ -18,18 +18,19 @@ class Robot(object):
         self.turtle.goto((x, y))
 
     def run(self):
-        self.updateSensors()
-        # print(results)
+        results = self.updateSensors()
+        print(results)
 
-        self.turtle.right(1.0)
-        self.turtle.forward(2.0)
+        self.turtle.left(2.0)
+        self.turtle.forward(1.0)
 
     def follow(self, x: float, y: float):
         print(x, y)
 
-    def updateSensors(self):
+    def updateSensors(self) -> list:
         self.canvas.delete(self.tag)
         xo, yo = self.turtle.pos()
+        results = list()
 
         for angle in self.angles:
             a = angle + self.turtle.heading()
@@ -57,13 +58,16 @@ class Robot(object):
                         yield (xi, yi)
 
             g = [(xi, yi) for xi, yi in generate()]
-            p = [(p[0]**2 + p[1]**2)**(1/2) for p in g]
+            p = [((p[0] - xo)**2 + (p[1] - yo)**2)**(1/2) for p in g]
 
             if p:
                 xi, yi = g[p.index(min(p))]
+                results.append(min(p))
 
                 self.canvas.create_line(
                     xo, -yo, xi, -yi, fill="red", tags=self.tag)
+
+        return results
 
     def intersection(self, l1: tuple, l2: tuple) -> tuple:
         def line(xo, yo, x, y):
