@@ -2,7 +2,7 @@ from robotSimulation import RobotSimulation
 
 
 def main():
-    s = RobotSimulation(1080, 720)
+    s = RobotSimulation()
     s.play()
 
 

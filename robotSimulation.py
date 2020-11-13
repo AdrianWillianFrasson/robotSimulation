@@ -3,16 +3,12 @@ from robot import Robot
 
 
 class RobotSimulation(object):
-    def __init__(self, width: int, height: int):
+    def __init__(self):
         self.obstcl = list()
-        self.robots = dict()
+        self.robots = list()
         self.screen = None
         self.canvas = None
-        self.frTime = 50
-
-        # Window (width x height)
-        self.width = width
-        self.height = height
+        self.frTime = 1
 
         # Auxiliary
         self.__obsPtn = tuple()  # Obstacle first point
@@ -24,7 +20,7 @@ class RobotSimulation(object):
 
         # Screen config
         self.screen.title("Robot Simulation")
-        self.screen.setup(width=self.width, height=self.height)
+        self.screen.setup(width=1080, height=720)
 
         # Screen Margins
         self.createObstacle(-500.0, -320.0)
@@ -47,8 +43,10 @@ class RobotSimulation(object):
 
     def createObstacle(self, x: float, y: float):
         if self.__obsFlg:
-            self.canvas.create_line(self.__obsPtn[0], -self.__obsPtn[1], x, -y)
-            self.obstcl.append((self.__obsPtn[0], self.__obsPtn[1], x, y))
+            xo = self.__obsPtn[0]
+            yo = self.__obsPtn[1]
+            self.canvas.create_line(xo, -yo, x, -y, tags="obs")
+            self.obstcl.append((xo, yo, x, y))
             self.__obsFlg = False
 
         else:
@@ -56,16 +54,14 @@ class RobotSimulation(object):
             self.__obsFlg = True
 
     def createRobot(self, x: float, y: float):
-        robot = Robot(self.obstcl, x, y)
-        self.robots[hash(robot)] = robot
+        self.robots.append(Robot(self.obstcl, x, y))
 
     def follow(self, x: float, y: float):
-        print(x, y)
-        for robot in self.robots.values():
+        for robot in self.robots:
             robot.follow(x, y)
 
     def updateScreen(self):
-        for robot in self.robots.values():
+        for robot in self.robots:
             robot.run()
 
         self.screen.ontimer(self.updateScreen, self.frTime)
