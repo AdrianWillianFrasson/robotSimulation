@@ -1,13 +1,17 @@
 from turtle import Turtle, Screen
-from math import atan2, sin, cos, pi
+from math import atan2, sqrt, sin, cos, pi
+
+from geometry import lineCalc, intersection
 
 
 class Robot(object):
-    def __init__(self, obstcl: list, x: float, y: float):
+    def __init__(self, robots: list, obstcl: list, x: float, y: float):
         self.turtle = Turtle()
         self.obstcl = obstcl
-        self.angles = [-90.0, -60.0, 0.0, 60.0, 90.0]
-        self.tag = f"sen{hash(self)}"
+        self.robots = robots
+        self.sensor = [-90.0, -60.0, 0.0, 60.0, 90.0]
+        self.result = list()
+        self.tag = f"s{hash(self)}"
 
         self.screen = Screen()
         self.canvas = self.screen.getcanvas()
@@ -18,39 +22,56 @@ class Robot(object):
         self.turtle.goto((x, y))
 
     def run(self):
-        results = self.updateSensors()
-        print(results)
+        self.result = self.updateSensors()
 
         self.turtle.left(2.0)
         self.turtle.forward(1.0)
+        self.detectCollision()
 
     def follow(self, x: float, y: float):
         print(x, y)
+
+    def detectCollision(self):
+        xo, yo = self.turtle.pos()
+
+        for ob in self.obstcl:
+            a, b, c = ob.abc
+
+            if 5.0 > abs(a*xo + b*yo - c) / sqrt(a*a + b*b):
+                x = (b*(b*xo - a*yo) + a*c) / (a*a + b*b)
+                # y = (a*(-b*xo + a*yo) + b*c) / (a*a + b*b)
+
+                if min(ob.xo, ob.x) <= x <= max(ob.xo, ob.x):
+                    try:
+                        self.robots.remove(self)
+                        self.canvas.delete(self.tag)
+                    except ValueError:
+                        pass
 
     def updateSensors(self) -> list:
         self.canvas.delete(self.tag)
         xo, yo = self.turtle.pos()
         results = list()
 
-        for angle in self.angles:
+        for angle in self.sensor:
             a = angle + self.turtle.heading()
             xf = cos(a * pi / 180.0) + xo
             yf = sin(a * pi / 180.0) + yo
 
             def generate():
-                for lo in self.obstcl:
-                    intersec = self.intersection((xo, yo, xf, yf), lo)
+                for ob in self.obstcl:
+                    itsec = intersection(lineCalc(xo, yo, xf, yf), ob.abc)
 
-                    if intersec is False:
+                    if itsec is False:
                         continue
 
-                    xi, yi = intersec
+                    xi, yi = itsec
 
-                    if lo[0] == lo[2]:
-                        if not (min(lo[1], lo[3]) <= yi <= max(lo[1], lo[3])):
+                    if ob.xo == ob.x:
+                        if not (min(ob.yo, ob.y) <= yi <= max(ob.yo, ob.y)):
                             continue
                     else:
-                        if not (min(lo[0], lo[2]) <= xi <= max(lo[0], lo[2])):
+                        if not (min(ob.xo, ob.x) <= xi <= max(ob.xo, ob.x)):
                             continue
 
                     h = round(atan2(yi - yo, xi - xo) * 180.0 / pi)
@@ -58,7 +79,7 @@ class Robot(object):
                         yield (xi, yi)
 
             g = [(xi, yi) for xi, yi in generate()]
-            p = [((p[0] - xo)**2 + (p[1] - yo)**2)**(1/2) for p in g]
+            p = [sqrt((p[0]-xo)*(p[0]-xo) + (p[1]-yo)*(p[1]-yo)) for p in g]
 
             if p:
                 xi, yi = g[p.index(min(p))]
@@ -68,24 +89,3 @@ class Robot(object):
                     xo, -yo, xi, -yi, fill="red", tags=self.tag)
 
         return results
-
-    def intersection(self, l1: tuple, l2: tuple) -> tuple:
-        def line(xo, yo, x, y):
-            # Line equation: a.x + b.y = c
-            a = yo - y
-            b = x - xo
-            c = yo * x - y * xo
-            return (a, b, c)
-
-        a1, b1, c1 = line(l1[0], l1[1], l1[2], l1[3])
-        a2, b2, c2 = line(l2[0], l2[1], l2[2], l2[3])
-
-        do = a1 * b2 - b1 * a2
-
-        if do == 0:
-            return False
-
-        dx = c1 * b2 - b1 * c2
-        dy = a1 * c2 - c1 * a2
-
-        return (dx / do, dy / do)
