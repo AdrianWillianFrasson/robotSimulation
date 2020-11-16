@@ -1,9 +1,13 @@
+# UFSC - System and Automation Department
+# DAS5334 - Adrian Willian Frasson
+
+
 from robotSimulation import RobotSimulation
 
 
 def main():
-    s = RobotSimulation()
-    s.play()
+    simulator = RobotSimulation()
+    simulator.play()
 
 
 if __name__ == "__main__":

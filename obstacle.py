@@ -1,12 +1,14 @@
-from geometry import lineCalc
+from calc import line
 
 
 class Obstacle(object):
-    def __init__(self, xo: float, yo: float, x: float, y: float):
-        self.xo = xo
-        self.yo = yo
-        self.x = x
-        self.y = y
+    """Represents an obstacle on the screen, it's a line segment"""
 
-        # Line equation: A.x + B.y = C
-        self.abc = lineCalc(xo, yo, x, y)
+    def __init__(self, xo: float, yo: float, x: float, y: float):
+        self.xo = xo  # initial x coordinate
+        self.yo = yo  # initial y coordinate
+        self.x = x    # final x coordinate
+        self.y = y    # final y coordinate
+
+        # Calculates the representative line of this segment
+        self.abc = line(xo, yo, x, y)
