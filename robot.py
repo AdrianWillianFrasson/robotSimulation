@@ -1,7 +1,7 @@
 from turtle import Turtle, Screen
-from math import atan2, sqrt, sin, cos, pi
+from math import atan2, sqrt, sin, cos, pi, floor
 
-from calc import intersection, line
+from calc import intersection, line, mapping
 
 
 class Robot(object):
@@ -32,9 +32,11 @@ class Robot(object):
         """Runs the robot routine"""
 
         self.result = self.updateSensors()
+
         self.detectTarget()
 
-        self.turtle.forward(2.0)
+        self.turtle.forward(1.5)
+
         self.detectCollision()
 
     def follow(self, x: float, y: float):
@@ -57,12 +59,18 @@ class Robot(object):
             xo, yo = self.turtle.pos()    # Robot (x, y) Position
             xt, yt, tag = self.target[0]  # Target (x, y) position
 
-            # Sets the direction of the robot to the target's direction
-            self.turtle.setheading(round(self.turtle.towards(xt, yt)))
+            # 'a' is the smallest angle that the robot
+            # needs to align with the target
+            d = self.turtle.towards(xt, yt) - self.turtle.heading()
+            a = min([d, d + 360, d - 360], key=abs)
+
+            # This mapping function is used to smooth the process
+            # in which the robot changes its angle to the target
+            self.turtle.left(floor(mapping(a, -180, 180, -10, 10)))
 
             # If the distance between the robot and the target is
-            # less than 2 (something) the robot has reached the target
-            if 2.0 > sqrt((xt-xo)*(xt-xo) + (yt-yo)*(yt-yo)):
+            # less than 8 (pixel?) the robot has reached the target
+            if 8.0 > sqrt((xt-xo)*(xt-xo) + (yt-yo)*(yt-yo)):
                 self.target.pop(0)       # Delets the target
                 self.canvas.delete(tag)  # clears the canvas
 
