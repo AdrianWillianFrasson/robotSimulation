@@ -84,6 +84,9 @@ class Robot(object):
         for ob in self.obstcl:
             a, b, c = ob.abc  # Obstacle line (A.x + B.y = C)
 
+            if sqrt(a*a + b*b) == 0:
+                continue
+
             # Calcs the distance between a point (robot)
             # and the line (obstacle)
             if 5.0 > abs(a*xo + b*yo - c) / sqrt(a*a + b*b):
